@@ -3,7 +3,7 @@
 # - tests
 #
 # Conditional build:
-%bcond_without	doc	# Sphinx documentation
+%bcond_with	doc	# Sphinx documentation
 
 %define		module	scipy
 Summary:	A library of scientific tools
@@ -16,6 +16,7 @@ Group:		Development/Languages/Python
 #Source0Download: https://github.com/scipy/scipy/releases/
 Source0:	https://github.com/scipy/scipy/releases/download/v%{version}/%{module}-%{version}.tar.gz
 # Source0-md5:	69db58ceb4b4c3ff3f3ea816e4e426b9
+Patch0:		numpy-deprecation-warnings.patch
 URL:		https://www.scipy.org/
 BuildRequires:	blas-devel >= 3.6.0
 BuildRequires:	gcc-fortran
@@ -28,6 +29,7 @@ BuildRequires:	python3-numpy >= 1:1.13.3
 BuildRequires:	python3-numpy-devel >= 1:1.13.3
 BuildRequires:	python3-setuptools
 %if %{with doc}
+BuildRequires:	pydoc3
 # matplotlib.sphinxext.plot_directive.__version__ >= 2
 BuildRequires:	python3-matplotlib >= 1.1.0
 BuildRequires:	sphinx-pdg-3 >= 1.6
@@ -62,6 +64,7 @@ Dokumentacja API modułu SciPy.
 
 %prep
 %setup -q -n scipy-%{version}
+%patch0 -p1
 
 %build
 # numpy.distutils uses LDFLAGS as its own flags replacement,
