@@ -3,41 +3,44 @@
 # - tests
 #
 # Conditional build:
-%bcond_with	doc	# Sphinx documentation
+%bcond_without	doc	# Sphinx documentation
 
 %define		module	scipy
 Summary:	A library of scientific tools
 Summary(pl.UTF-8):	Biblioteka narzędzi naukowych
 Name:		python3-%{module}
-Version:	1.3.1
+Version:	1.4.1
 Release:	1
 License:	BSD
 Group:		Development/Languages/Python
 #Source0Download: https://github.com/scipy/scipy/releases/
-Source0:	https://github.com/scipy/scipy/releases/download/v%{version}/%{module}-%{version}.tar.gz
-# Source0-md5:	69db58ceb4b4c3ff3f3ea816e4e426b9
+Source0:	https://github.com/scipy/scipy/releases/download/v%{version}/%{module}-%{version}.tar.xz
+# Source0-md5:	27608d42755c1acb097c7ab3616aafe0
 Patch0:		numpy-deprecation-warnings.patch
 URL:		https://www.scipy.org/
 BuildRequires:	blas-devel >= 3.6.0
 BuildRequires:	gcc-fortran
 BuildRequires:	lapack-devel >= 3.6.0
 BuildRequires:	rpmbuild(macros) >= 1.714
-BuildRequires:	f2py3 >= 1:1.8.2
+BuildRequires:	f2py3 >= 1:1.13.3
 BuildRequires:	python3 >= 1:3.5
-BuildRequires:	python3-devel >= 1:3.4
+BuildRequires:	python3-devel >= 1:3.5
 BuildRequires:	python3-numpy >= 1:1.13.3
 BuildRequires:	python3-numpy-devel >= 1:1.13.3
+BuildRequires:	python3-pybind11 >= 2.4.0
 BuildRequires:	python3-setuptools
+BuildRequires:	tar >= 1:1.22
+BuildRequires:	xz
 %if %{with doc}
 BuildRequires:	pydoc3
 # matplotlib.sphinxext.plot_directive.__version__ >= 2
 BuildRequires:	python3-matplotlib >= 1.1.0
-BuildRequires:	sphinx-pdg-3 >= 1.6
+BuildRequires:	sphinx-pdg-3 >= 2.0
 %endif
 Requires:	lapack >= 3.6.0
 Requires:	python3-modules >= 1:3.5
 Requires:	python3-numpy >= 1:1.13.3
-Suggests:	python3-PIL
+Suggests:	python3-pillow
 BuildRoot:	%{tmpdir}/%{name}-%{version}-root-%(id -u -n)
 
 %description
@@ -81,7 +84,7 @@ export LAPACK=%{_libdir}
 %if %{with doc}
 LANG=C \
 PYTHONPATH=$(readlink -f build-3/lib.*) \
-%{__make} -C doc html \
+%{__make} -C doc html-build \
 	SPHINXBUILD=sphinx-build-3
 %endif
 
@@ -94,6 +97,12 @@ export LAPACK=%{_libdir}
 %py3_install
 
 %{__rm} $RPM_BUILD_ROOT%{py3_sitedir}/%{module}/*.txt
+%{__rm} $RPM_BUILD_ROOT%{py3_sitedir}/%{module}/_lib/_uarray/LICENSE
+%{__rm} $RPM_BUILD_ROOT%{py3_sitedir}/%{module}/fft/_pocketfft/LICENSE.md
+%{__rm} $RPM_BUILD_ROOT%{py3_sitedir}/%{module}/linalg/src/{id_dist/doc/doc.tex,lapack_deprecations/LICENSE}
+%{__rm} $RPM_BUILD_ROOT%{py3_sitedir}/%{module}/optimize/lbfgsb_src/README
+%{__rm} $RPM_BUILD_ROOT%{py3_sitedir}/%{module}/sparse/linalg/{dsolve/SuperLU/License.txt,eigen/arpack/ARPACK/COPYING}
+%{__rm} $RPM_BUILD_ROOT%{py3_sitedir}/%{module}/spatial/qhull_src/COPYING.txt
 %{__rm} -r $RPM_BUILD_ROOT%{py3_sitedir}/%{module}/*/tests
 %{__rm} -r $RPM_BUILD_ROOT%{py3_sitedir}/%{module}/*/*/tests
 %{__rm} -r $RPM_BUILD_ROOT%{py3_sitedir}/%{module}/*/*/*/tests
@@ -104,7 +113,7 @@ rm -rf $RPM_BUILD_ROOT
 
 %files -n python3-%{module}
 %defattr(644,root,root,755)
-%doc INSTALL.rst.txt LICENSE.txt THANKS.txt doc/README.txt
+%doc INSTALL.rst.txt LICENSE.txt THANKS.txt doc/{API.rst.txt,README.md,ROADMAP.rst.txt}
 %dir %{py3_sitedir}/%{module}
 %{py3_sitedir}/%{module}/*.py
 %{py3_sitedir}/%{module}/__pycache__
@@ -112,6 +121,17 @@ rm -rf $RPM_BUILD_ROOT
 %dir %{py3_sitedir}/%{module}/_build_utils
 %{py3_sitedir}/%{module}/_build_utils/*.py
 %{py3_sitedir}/%{module}/_build_utils/__pycache__
+%dir %{py3_sitedir}/%{module}/_lib
+%attr(755,root,root) %{py3_sitedir}/%{module}/_lib/_ccallback_c.*.so
+%attr(755,root,root) %{py3_sitedir}/%{module}/_lib/_fpumode.*.so
+%attr(755,root,root) %{py3_sitedir}/%{module}/_lib/_test_ccallback.*.so
+%attr(755,root,root) %{py3_sitedir}/%{module}/_lib/messagestream.*.so
+%{py3_sitedir}/%{module}/_lib/*.py
+%{py3_sitedir}/%{module}/_lib/__pycache__
+%dir %{py3_sitedir}/%{module}/_lib/_uarray
+%attr(755,root,root) %{py3_sitedir}/%{module}/_lib/_uarray/_uarray.cpython-*.so
+%{py3_sitedir}/%{module}/_lib/_uarray/*.py
+%{py3_sitedir}/%{module}/_lib/_uarray/__pycache__
 %dir %{py3_sitedir}/%{module}/cluster
 %attr(755,root,root) %{py3_sitedir}/%{module}/cluster/*.so
 %{py3_sitedir}/%{module}/cluster/*.py
@@ -119,6 +139,13 @@ rm -rf $RPM_BUILD_ROOT
 %dir %{py3_sitedir}/%{module}/constants
 %{py3_sitedir}/%{module}/constants/*.py
 %{py3_sitedir}/%{module}/constants/__pycache__
+%dir %{py3_sitedir}/%{module}/fft
+%{py3_sitedir}/%{module}/fft/*.py
+%{py3_sitedir}/%{module}/fft/__pycache__
+%dir %{py3_sitedir}/%{module}/fft/_pocketfft
+%attr(755,root,root) %{py3_sitedir}/%{module}/fft/_pocketfft/pypocketfft.cpython-*.so
+%{py3_sitedir}/%{module}/fft/_pocketfft/*.py
+%{py3_sitedir}/%{module}/fft/_pocketfft/__pycache__
 %dir %{py3_sitedir}/%{module}/fftpack
 %attr(755,root,root) %{py3_sitedir}/%{module}/fftpack/*.so
 %{py3_sitedir}/%{module}/fftpack/*.py
@@ -148,13 +175,6 @@ rm -rf $RPM_BUILD_ROOT
 %dir %{py3_sitedir}/%{module}/io/harwell_boeing
 %{py3_sitedir}/%{module}/io/harwell_boeing/*.py
 %{py3_sitedir}/%{module}/io/harwell_boeing/__pycache__
-%dir %{py3_sitedir}/%{module}/_lib
-%{py3_sitedir}/%{module}/_lib/*.py
-%{py3_sitedir}/%{module}/_lib/__pycache__
-%attr(755,root,root) %{py3_sitedir}/%{module}/_lib/_ccallback_c.*.so
-%attr(755,root,root) %{py3_sitedir}/%{module}/_lib/_fpumode.*.so
-%attr(755,root,root) %{py3_sitedir}/%{module}/_lib/_test_ccallback.*.so
-%attr(755,root,root) %{py3_sitedir}/%{module}/_lib/messagestream.*.so
 %dir %{py3_sitedir}/%{module}/linalg
 %{py3_sitedir}/%{module}/linalg/*.pxd
 %attr(755,root,root) %{py3_sitedir}/%{module}/linalg/*.so
@@ -259,5 +279,5 @@ rm -rf $RPM_BUILD_ROOT
 %if %{with doc}
 %files apidocs
 %defattr(644,root,root,755)
-%doc doc/build/html/*
+%doc doc/build/html/{_images,_static,generated,tutorial,*.html,*.js}
 %endif
