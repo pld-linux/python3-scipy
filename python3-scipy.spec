@@ -9,26 +9,26 @@
 Summary:	A library of scientific tools
 Summary(pl.UTF-8):	Biblioteka narzędzi naukowych
 Name:		python3-%{module}
-Version:	1.4.1
+Version:	1.5.4
 Release:	1
 License:	BSD
 Group:		Development/Languages/Python
 #Source0Download: https://github.com/scipy/scipy/releases/
 Source0:	https://github.com/scipy/scipy/releases/download/v%{version}/%{module}-%{version}.tar.xz
-# Source0-md5:	27608d42755c1acb097c7ab3616aafe0
+# Source0-md5:	d446ec7a6b0bc44484389ab7589eccf5
 Patch0:		numpy-deprecation-warnings.patch
 URL:		https://www.scipy.org/
 BuildRequires:	blas-devel >= 3.6.0
+BuildRequires:	f2py3 >= 1:1.14.5
 BuildRequires:	gcc-fortran
 BuildRequires:	lapack-devel >= 3.6.0
-BuildRequires:	rpmbuild(macros) >= 1.714
-BuildRequires:	f2py3 >= 1:1.13.3
-BuildRequires:	python3 >= 1:3.5
+BuildRequires:	python3 >= 1:3.6
 BuildRequires:	python3-devel >= 1:3.5
-BuildRequires:	python3-numpy >= 1:1.13.3
-BuildRequires:	python3-numpy-devel >= 1:1.13.3
-BuildRequires:	python3-pybind11 >= 2.4.0
+BuildRequires:	python3-numpy >= 1:1.14.5
+BuildRequires:	python3-numpy-devel >= 1:1.14.5
+BuildRequires:	python3-pybind11 >= 2.4.3
 BuildRequires:	python3-setuptools
+BuildRequires:	rpmbuild(macros) >= 1.752
 BuildRequires:	tar >= 1:1.22
 BuildRequires:	xz
 %if %{with doc}
@@ -38,8 +38,8 @@ BuildRequires:	python3-matplotlib >= 1.1.0
 BuildRequires:	sphinx-pdg-3 >= 2.0
 %endif
 Requires:	lapack >= 3.6.0
-Requires:	python3-modules >= 1:3.5
-Requires:	python3-numpy >= 1:1.13.3
+Requires:	python3-modules >= 1:3.6
+Requires:	python3-numpy >= 1:1.14.5
 Suggests:	python3-pillow
 BuildRoot:	%{tmpdir}/%{name}-%{version}-root-%(id -u -n)
 
@@ -58,6 +58,7 @@ pakiet.
 Summary:	API documentation for SciPy module
 Summary(pl.UTF-8):	Dokumentacja API modułu SciPy
 Group:		Documentation
+%{?noarchpackage}
 
 %description apidocs
 API documentation for SciPy module.
@@ -103,6 +104,7 @@ export LAPACK=%{_libdir}
 %{__rm} $RPM_BUILD_ROOT%{py3_sitedir}/%{module}/optimize/lbfgsb_src/README
 %{__rm} $RPM_BUILD_ROOT%{py3_sitedir}/%{module}/sparse/linalg/{dsolve/SuperLU/License.txt,eigen/arpack/ARPACK/COPYING}
 %{__rm} $RPM_BUILD_ROOT%{py3_sitedir}/%{module}/spatial/qhull_src/COPYING.txt
+%{__rm} $RPM_BUILD_ROOT%{py3_sitedir}/%{module}/_lib/_test_deprecation_*.so
 %{__rm} -r $RPM_BUILD_ROOT%{py3_sitedir}/%{module}/*/tests
 %{__rm} -r $RPM_BUILD_ROOT%{py3_sitedir}/%{module}/*/*/tests
 %{__rm} -r $RPM_BUILD_ROOT%{py3_sitedir}/%{module}/*/*/*/tests
@@ -258,14 +260,16 @@ rm -rf $RPM_BUILD_ROOT
 %dir %{py3_sitedir}/%{module}/spatial
 %attr(755,root,root) %{py3_sitedir}/%{module}/spatial/*.so
 %{py3_sitedir}/%{module}/spatial/*.py
+%{py3_sitedir}/%{module}/spatial/*.pyi
 %{py3_sitedir}/%{module}/spatial/__pycache__
 %dir %{py3_sitedir}/%{module}/spatial/transform
 %{py3_sitedir}/%{module}/spatial/transform/*.py
 %{py3_sitedir}/%{module}/spatial/transform/__pycache__
 %dir %{py3_sitedir}/%{module}/special
 %attr(755,root,root) %{py3_sitedir}/%{module}/special/*.so
-%{py3_sitedir}/%{module}/special/*.py
 %{py3_sitedir}/%{module}/special/*.pxd
+%{py3_sitedir}/%{module}/special/*.py
+%{py3_sitedir}/%{module}/special/*.pyi
 %{py3_sitedir}/%{module}/special/__pycache__
 %dir %{py3_sitedir}/%{module}/special/_precompute
 %{py3_sitedir}/%{module}/special/_precompute/*.py
