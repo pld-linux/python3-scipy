@@ -58,7 +58,7 @@ pakiet.
 Summary:	API documentation for SciPy module
 Summary(pl.UTF-8):	Dokumentacja API modułu SciPy
 Group:		Documentation
-%{?noarchpackage}
+BuildArch:	noarch
 
 %description apidocs
 API documentation for SciPy module.
