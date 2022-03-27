@@ -9,14 +9,15 @@
 Summary:	A library of scientific tools
 Summary(pl.UTF-8):	Biblioteka narzędzi naukowych
 Name:		python3-%{module}
-Version:	1.5.4
-Release:	4
+Version:	1.7.3
+Release:	1
 License:	BSD
 Group:		Development/Languages/Python
 #Source0Download: https://github.com/scipy/scipy/releases/
 Source0:	https://github.com/scipy/scipy/releases/download/v%{version}/%{module}-%{version}.tar.xz
-# Source0-md5:	d446ec7a6b0bc44484389ab7589eccf5
+# Source0-md5:	9e6a6ae20e68e99031229c430f966672
 Patch0:		numpy-deprecation-warnings.patch
+Patch1:		%{name}-cython3.patch
 URL:		https://www.scipy.org/
 BuildRequires:	blas-devel >= 3.6.0
 BuildRequires:	f2py3 >= 1:1.14.5
@@ -69,6 +70,7 @@ Dokumentacja API modułu SciPy.
 %prep
 %setup -q -n scipy-%{version}
 %patch0 -p1
+%patch1 -p1
 
 %build
 # numpy.distutils uses LDFLAGS as its own flags replacement,
@@ -115,7 +117,7 @@ rm -rf $RPM_BUILD_ROOT
 
 %files -n python3-%{module}
 %defattr(644,root,root,755)
-%doc INSTALL.rst.txt LICENSE.txt THANKS.txt doc/{API.rst.txt,README.md,ROADMAP.rst.txt}
+%doc INSTALL.rst.txt LICENSE.txt README.rst doc/{API.rst.txt,ROADMAP.rst.txt}
 %dir %{py3_sitedir}/%{module}
 %{py3_sitedir}/%{module}/*.py
 %{py3_sitedir}/%{module}/__pycache__
@@ -199,7 +201,13 @@ rm -rf $RPM_BUILD_ROOT
 %dir %{py3_sitedir}/%{module}/optimize
 %attr(755,root,root) %{py3_sitedir}/%{module}/optimize/*.so
 %{py3_sitedir}/%{module}/optimize/*.py
+%{py3_sitedir}/%{module}/optimize/*.pyi
 %{py3_sitedir}/%{module}/optimize/__pycache__
+%dir %{py3_sitedir}/%{module}/optimize/_highs
+%attr(755,root,root) %{py3_sitedir}/%{module}/optimize/_highs/*.so
+%{py3_sitedir}/%{module}/optimize/_highs/*.py
+%{py3_sitedir}/%{module}/optimize/_highs/__pycache__
+%{py3_sitedir}/%{module}/optimize/_highs/cython
 %dir %{py3_sitedir}/%{module}/optimize/_lsq
 %attr(755,root,root) %{py3_sitedir}/%{module}/optimize/_lsq/*.so
 %{py3_sitedir}/%{module}/optimize/_lsq/*.py
@@ -207,7 +215,6 @@ rm -rf $RPM_BUILD_ROOT
 %dir %{py3_sitedir}/%{module}/optimize/_shgo_lib
 %{py3_sitedir}/%{module}/optimize/_shgo_lib/*.py
 %{py3_sitedir}/%{module}/optimize/_shgo_lib/__pycache__
-%{py3_sitedir}/%{module}/optimize/_shgo_lib/sobol_vec.gz
 %dir %{py3_sitedir}/%{module}/optimize/_trlib
 %attr(755,root,root) %{py3_sitedir}/%{module}/optimize/_trlib/*.so
 %{py3_sitedir}/%{module}/optimize/_trlib/*.py
@@ -263,7 +270,9 @@ rm -rf $RPM_BUILD_ROOT
 %{py3_sitedir}/%{module}/spatial/*.pyi
 %{py3_sitedir}/%{module}/spatial/__pycache__
 %dir %{py3_sitedir}/%{module}/spatial/transform
+%attr(755,root,root) %{py3_sitedir}/%{module}/spatial/transform/*.so
 %{py3_sitedir}/%{module}/spatial/transform/*.py
+%{py3_sitedir}/%{module}/spatial/transform/*.pyi
 %{py3_sitedir}/%{module}/spatial/transform/__pycache__
 %dir %{py3_sitedir}/%{module}/special
 %attr(755,root,root) %{py3_sitedir}/%{module}/special/*.so
@@ -277,7 +286,14 @@ rm -rf $RPM_BUILD_ROOT
 %dir %{py3_sitedir}/%{module}/stats
 %attr(755,root,root) %{py3_sitedir}/%{module}/stats/*.so
 %{py3_sitedir}/%{module}/stats/*.py
+%{py3_sitedir}/%{module}/stats/*.pyi
+%{py3_sitedir}/%{module}/stats/*.pxd
+%{py3_sitedir}/%{module}/stats/_sobol_direction_numbers.npz
 %{py3_sitedir}/%{module}/stats/__pycache__
+%dir %{py3_sitedir}/%{module}/stats/_boost
+%attr(755,root,root) %{py3_sitedir}/%{module}/stats/_boost/*.so
+%{py3_sitedir}/%{module}/stats/_boost/*.py
+%{py3_sitedir}/%{module}/stats/_boost/__pycache__
 %{py3_sitedir}/%{module}-%{version}-py*.egg-info
 
 %if %{with doc}

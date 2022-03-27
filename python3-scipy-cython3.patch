@@ -1,0 +1,11 @@
+--- scipy-1.7.3/tools/cythonize.py.orig	2021-11-23 18:19:51.152109400 +0100
++++ scipy-1.7.3/tools/cythonize.py	2022-03-26 07:41:27.385985910 +0100
+@@ -103,7 +103,7 @@ def process_pyx(fromfile, tofile, cwd):
+ 
+     try:
+         try:
+-            r = subprocess.call(['cython'] + flags + ["-o", tofile, fromfile], cwd=cwd)
++            r = subprocess.call(['cython3'] + flags + ["-o", tofile, fromfile], cwd=cwd)
+             if r != 0:
+                 raise Exception('Cython failed')
+         except OSError as e:
