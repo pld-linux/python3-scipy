@@ -23,11 +23,13 @@ BuildRequires:	blas-devel >= 3.6.0
 BuildRequires:	f2py3 >= 1:1.14.5
 BuildRequires:	gcc-fortran
 BuildRequires:	lapack-devel >= 3.6.0
-BuildRequires:	python3 >= 1:3.6
-BuildRequires:	python3-devel >= 1:3.5
-BuildRequires:	python3-numpy >= 1:1.14.5
-BuildRequires:	python3-numpy-devel >= 1:1.14.5
+BuildRequires:	python3 >= 1:3.7
+BuildRequires:	python3-devel >= 1:3.7
+BuildRequires:	python3-numpy >= 1:1.16.5
+BuildRequires:	python3-numpy-devel >= 1:1.16.5
+BuildRequires:	python3-numpy-devel < 1:1.23
 BuildRequires:	python3-pybind11 >= 2.4.3
+BuildRequires:	python3-pythran >= 0.9.11
 BuildRequires:	python3-setuptools
 BuildRequires:	rpmbuild(macros) >= 1.752
 BuildRequires:	tar >= 1:1.22
@@ -39,8 +41,8 @@ BuildRequires:	python3-matplotlib >= 1.1.0
 BuildRequires:	sphinx-pdg-3 >= 2.0
 %endif
 Requires:	lapack >= 3.6.0
-Requires:	python3-modules >= 1:3.6
-Requires:	python3-numpy >= 1:1.14.5
+Requires:	python3-modules >= 1:3.7
+Requires:	python3-numpy >= 1:1.16.5
 Suggests:	python3-pillow
 BuildRoot:	%{tmpdir}/%{name}-%{version}-root-%(id -u -n)
 
