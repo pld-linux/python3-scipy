@@ -9,40 +9,48 @@
 Summary:	A library of scientific tools
 Summary(pl.UTF-8):	Biblioteka narzędzi naukowych
 Name:		python3-%{module}
-Version:	1.7.3
-Release:	2
+Version:	1.8.1
+Release:	1
 License:	BSD
 Group:		Development/Languages/Python
 #Source0Download: https://github.com/scipy/scipy/releases/
 Source0:	https://github.com/scipy/scipy/releases/download/v%{version}/%{module}-%{version}.tar.xz
-# Source0-md5:	9e6a6ae20e68e99031229c430f966672
+# Source0-md5:	15c3e57656dbd1626ae33971f2e80ab1
 Patch0:		numpy-deprecation-warnings.patch
 Patch1:		%{name}-cython3.patch
+# https://github.com/scipy/scipy/pull/16646
+Patch2:		scipy-pythran.patch
+Patch3:		scipy-numpydoc-update.patch
 URL:		https://www.scipy.org/
 BuildRequires:	blas-devel >= 3.6.0
 BuildRequires:	f2py3 >= 1:1.14.5
 BuildRequires:	gcc-fortran
 BuildRequires:	lapack-devel >= 3.6.0
-BuildRequires:	python3 >= 1:3.7
-BuildRequires:	python3-devel >= 1:3.7
-BuildRequires:	python3-numpy >= 1:1.16.5
-BuildRequires:	python3-numpy-devel >= 1:1.16.5
-BuildRequires:	python3-numpy-devel < 1:1.23
+BuildRequires:	libstdc++-devel >= 6:5
+BuildRequires:	python3 >= 1:3.8
+BuildRequires:	python3-devel >= 1:3.8
+BuildRequires:	python3-numpy >= 1:1.17.3
+BuildRequires:	python3-numpy-devel >= 1:1.17.3
+BuildRequires:	python3-numpy-devel < 1:1.25
 BuildRequires:	python3-pybind11 >= 2.4.3
-BuildRequires:	python3-pythran >= 0.9.11
+BuildRequires:	python3-pythran >= 0.10.0
 BuildRequires:	python3-setuptools
+BuildRequires:	rpm-build >= 4.6
 BuildRequires:	rpmbuild(macros) >= 1.752
 BuildRequires:	tar >= 1:1.22
 BuildRequires:	xz
 %if %{with doc}
 BuildRequires:	pydoc3
-# matplotlib.sphinxext.plot_directive.__version__ >= 2
-BuildRequires:	python3-matplotlib >= 1.1.0
+BuildRequires:	python3-matplotlib >= 2
+# local version is used
+#BuildRequires:	python3-numpydoc
+BuildRequires:	python3-pydata_sphinx_theme >= 0.6.1
+BuildRequires:	python3-sphinx_panels
 BuildRequires:	sphinx-pdg-3 >= 2.0
 %endif
 Requires:	lapack >= 3.6.0
-Requires:	python3-modules >= 1:3.7
-Requires:	python3-numpy >= 1:1.16.5
+Requires:	python3-modules >= 1:3.8
+Requires:	python3-numpy >= 1:1.17.3
 Suggests:	python3-pillow
 BuildRoot:	%{tmpdir}/%{name}-%{version}-root-%(id -u -n)
 
@@ -73,6 +81,8 @@ Dokumentacja API modułu SciPy.
 %setup -q -n scipy-%{version}
 %patch0 -p1
 %patch1 -p1
+%patch2 -p1
+%patch3 -p1
 
 %build
 # numpy.distutils uses LDFLAGS as its own flags replacement,
@@ -87,6 +97,9 @@ export LAPACK=%{_libdir}
 %py3_build
 
 %if %{with doc}
+cp -pr scipy/io/tests build-3/lib.*/scipy/io
+cp -p scipy/misc/*.dat build-3/lib.*/scipy/misc
+cp -p scipy/stats/_sobol_direction_numbers.npz build-3/lib.*/scipy/stats
 LANG=C \
 PYTHONPATH=$(readlink -f build-3/lib.*) \
 %{__make} -C doc html-build \
@@ -106,7 +119,7 @@ export LAPACK=%{_libdir}
 %{__rm} $RPM_BUILD_ROOT%{py3_sitedir}/%{module}/fft/_pocketfft/LICENSE.md
 %{__rm} $RPM_BUILD_ROOT%{py3_sitedir}/%{module}/linalg/src/{id_dist/doc/doc.tex,lapack_deprecations/LICENSE}
 %{__rm} $RPM_BUILD_ROOT%{py3_sitedir}/%{module}/optimize/lbfgsb_src/README
-%{__rm} $RPM_BUILD_ROOT%{py3_sitedir}/%{module}/sparse/linalg/{dsolve/SuperLU/License.txt,eigen/arpack/ARPACK/COPYING}
+%{__rm} $RPM_BUILD_ROOT%{py3_sitedir}/%{module}/sparse/linalg/{_dsolve/SuperLU/License.txt,_eigen/arpack/ARPACK/COPYING}
 %{__rm} $RPM_BUILD_ROOT%{py3_sitedir}/%{module}/spatial/qhull_src/COPYING.txt
 %{__rm} $RPM_BUILD_ROOT%{py3_sitedir}/%{module}/_lib/_test_deprecation_*.so
 %{__rm} -r $RPM_BUILD_ROOT%{py3_sitedir}/%{module}/*/tests
@@ -171,6 +184,9 @@ rm -rf $RPM_BUILD_ROOT
 %{py3_sitedir}/%{module}/io/*.py
 %{py3_sitedir}/%{module}/io/__pycache__
 %attr(755,root,root) %{py3_sitedir}/%{module}/io/*.so
+%dir %{py3_sitedir}/%{module}/io/_harwell_boeing
+%{py3_sitedir}/%{module}/io/_harwell_boeing/*.py
+%{py3_sitedir}/%{module}/io/_harwell_boeing/__pycache__
 %dir %{py3_sitedir}/%{module}/io/arff
 %{py3_sitedir}/%{module}/io/arff/*.py
 %{py3_sitedir}/%{module}/io/arff/__pycache__
@@ -178,13 +194,11 @@ rm -rf $RPM_BUILD_ROOT
 %attr(755,root,root) %{py3_sitedir}/%{module}/io/matlab/*.so
 %{py3_sitedir}/%{module}/io/matlab/*.py
 %{py3_sitedir}/%{module}/io/matlab/__pycache__
-%dir %{py3_sitedir}/%{module}/io/harwell_boeing
-%{py3_sitedir}/%{module}/io/harwell_boeing/*.py
-%{py3_sitedir}/%{module}/io/harwell_boeing/__pycache__
 %dir %{py3_sitedir}/%{module}/linalg
 %{py3_sitedir}/%{module}/linalg/*.pxd
 %attr(755,root,root) %{py3_sitedir}/%{module}/linalg/*.so
 %{py3_sitedir}/%{module}/linalg/*.py
+%{py3_sitedir}/%{module}/linalg/*.pyi
 %{py3_sitedir}/%{module}/linalg/__pycache__
 %dir %{py3_sitedir}/%{module}/misc
 %{py3_sitedir}/%{module}/misc/ascent.dat
@@ -248,24 +262,26 @@ rm -rf $RPM_BUILD_ROOT
 %{py3_sitedir}/%{module}/sparse/csgraph/*.py
 %{py3_sitedir}/%{module}/sparse/csgraph/__pycache__
 %attr(755,root,root) %{py3_sitedir}/%{module}/sparse/csgraph/*.so
-%dir %{py3_sitedir}/%{module}/sparse/linalg/dsolve
-%attr(755,root,root) %{py3_sitedir}/%{module}/sparse/linalg/dsolve/*.so
-%{py3_sitedir}/%{module}/sparse/linalg/dsolve/*.py
-%{py3_sitedir}/%{module}/sparse/linalg/dsolve/__pycache__
-%dir %{py3_sitedir}/%{module}/sparse/linalg/eigen
-%{py3_sitedir}/%{module}/sparse/linalg/eigen/*.py
-%{py3_sitedir}/%{module}/sparse/linalg/eigen/__pycache__
-%dir %{py3_sitedir}/%{module}/sparse/linalg/eigen/arpack
-%attr(755,root,root) %{py3_sitedir}/%{module}/sparse/linalg/eigen/arpack/*.so
-%{py3_sitedir}/%{module}/sparse/linalg/eigen/arpack/*.py
-%{py3_sitedir}/%{module}/sparse/linalg/eigen/arpack/__pycache__
-%dir %{py3_sitedir}/%{module}/sparse/linalg/eigen/lobpcg
-%{py3_sitedir}/%{module}/sparse/linalg/eigen/lobpcg/*.py
-%{py3_sitedir}/%{module}/sparse/linalg/eigen/lobpcg/__pycache__
-%dir %{py3_sitedir}/%{module}/sparse/linalg/isolve
-%attr(755,root,root) %{py3_sitedir}/%{module}/sparse/linalg/isolve/*.so
-%{py3_sitedir}/%{module}/sparse/linalg/isolve/*.py
-%{py3_sitedir}/%{module}/sparse/linalg/isolve/__pycache__
+%dir %{py3_sitedir}/%{module}/sparse/linalg/_dsolve
+%attr(755,root,root) %{py3_sitedir}/%{module}/sparse/linalg/_dsolve/*.so
+%{py3_sitedir}/%{module}/sparse/linalg/_dsolve/*.py
+%{py3_sitedir}/%{module}/sparse/linalg/_dsolve/__pycache__
+%dir %{py3_sitedir}/%{module}/sparse/linalg/_eigen
+%{py3_sitedir}/%{module}/sparse/linalg/_eigen/*.py
+%{py3_sitedir}/%{module}/sparse/linalg/_eigen/__pycache__
+%dir %{py3_sitedir}/%{module}/sparse/linalg/_eigen/arpack
+%attr(755,root,root) %{py3_sitedir}/%{module}/sparse/linalg/_eigen/arpack/*.so
+%{py3_sitedir}/%{module}/sparse/linalg/_eigen/arpack/*.py
+%{py3_sitedir}/%{module}/sparse/linalg/_eigen/arpack/__pycache__
+%dir %{py3_sitedir}/%{module}/sparse/linalg/_eigen/lobpcg
+%{py3_sitedir}/%{module}/sparse/linalg/_eigen/lobpcg/*.py
+%{py3_sitedir}/%{module}/sparse/linalg/_eigen/lobpcg/__pycache__
+%dir %{py3_sitedir}/%{module}/sparse/linalg/_isolve
+%attr(755,root,root) %{py3_sitedir}/%{module}/sparse/linalg/_isolve/*.so
+%{py3_sitedir}/%{module}/sparse/linalg/_isolve/*.py
+%{py3_sitedir}/%{module}/sparse/linalg/_isolve/__pycache__
+%dir %{py3_sitedir}/%{module}/sparse/linalg/_propack
+%attr(755,root,root) %{py3_sitedir}/%{module}/sparse/linalg/_propack/*.so
 %dir %{py3_sitedir}/%{module}/spatial
 %attr(755,root,root) %{py3_sitedir}/%{module}/spatial/*.so
 %{py3_sitedir}/%{module}/spatial/*.py
@@ -296,10 +312,16 @@ rm -rf $RPM_BUILD_ROOT
 %attr(755,root,root) %{py3_sitedir}/%{module}/stats/_boost/*.so
 %{py3_sitedir}/%{module}/stats/_boost/*.py
 %{py3_sitedir}/%{module}/stats/_boost/__pycache__
-%{py3_sitedir}/%{module}-%{version}-py*.egg-info
+%dir %{py3_sitedir}/%{module}/stats/_unuran
+%attr(755,root,root) %{py3_sitedir}/%{module}/stats/_unuran/*.so
+%{py3_sitedir}/%{module}/stats/_unuran/*.pxd
+%{py3_sitedir}/%{module}/stats/_unuran/*.py
+%{py3_sitedir}/%{module}/stats/_unuran/*.pyi
+%{py3_sitedir}/%{module}/stats/_unuran/__pycache__
+%{py3_sitedir}/SciPy-%{version}-py*.egg-info
 
 %if %{with doc}
 %files apidocs
 %defattr(644,root,root,755)
-%doc doc/build/html/{_images,_static,generated,tutorial,*.html,*.js}
+%doc doc/build/html/{_images,_panels_static,_static,building,dev,reference,tutorial,*.html,*.js}
 %endif
