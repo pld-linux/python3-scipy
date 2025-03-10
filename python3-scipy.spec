@@ -10,7 +10,7 @@ Summary:	A library of scientific tools
 Summary(pl.UTF-8):	Biblioteka narzędzi naukowych
 Name:		python3-%{module}
 Version:	1.8.1
-Release:	
+Release:	2
 License:	BSD
 Group:		Development/Languages/Python
 #Source0Download: https://github.com/scipy/scipy/releases/
@@ -79,10 +79,10 @@ Dokumentacja API modułu SciPy.
 
 %prep
 %setup -q -n scipy-%{version}
-%patch0 -p1
-%patch1 -p1
-%patch2 -p1
-%patch3 -p1
+%patch -P 0 -p1
+%patch -P 1 -p1
+%patch -P 2 -p1
+%patch -P 3 -p1
 
 %build
 # numpy.distutils uses LDFLAGS as its own flags replacement,
