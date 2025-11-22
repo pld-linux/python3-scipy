@@ -9,51 +9,74 @@
 Summary:	A library of scientific tools
 Summary(pl.UTF-8):	Biblioteka narzędzi naukowych
 Name:		python3-%{module}
-Version:	1.15.2
+Version:	1.16.3
 Release:	1
 License:	BSD
 Group:		Development/Languages/Python
 #Source0Download: https://github.com/scipy/scipy/releases/
 Source0:	https://github.com/scipy/scipy/releases/download/v%{version}/%{module}-%{version}.tar.gz
-# Source0-md5:	515fc1544d7617b38fe5a9328538047b
+# Source0-md5:	db334c9cae4eeb9f306c342b3744d653
 URL:		https://www.scipy.org/
 BuildRequires:	blas-devel >= 3.6.0
+# TODO: -Duse-system-libraries=boost.math for meson
+#BuildRequires:	boost-devel >= 1:1.88.0
 BuildRequires:	cblas-devel
 BuildRequires:	f2py3 >= 1:1.14.5
 BuildRequires:	gcc-fortran
 BuildRequires:	lapack-devel >= 3.6.0
-BuildRequires:	libstdc++-devel >= 6:5
-BuildRequires:	python3 >= 1:3.10
+BuildRequires:	libstdc++-devel >= 6:9.1
+BuildRequires:	meson >= 1.5.0
+BuildRequires:	ninja
+BuildRequires:	python3 >= 1:3.11
 BuildRequires:	python3-Cython >= 3.0.8
 BuildRequires:	python3-build
-BuildRequires:	python3-devel >= 1:3.8
+BuildRequires:	python3-devel >= 1:3.11
 BuildRequires:	python3-installer
 BuildRequires:	python3-meson-python >= 0.15.0
 BuildRequires:	python3-numpy >= 1:2.0.0
 BuildRequires:	python3-numpy-devel >= 1:2.0.0
-BuildRequires:	python3-numpy-devel < 1:2.5
+BuildRequires:	python3-numpy-devel < 1:2.6
 BuildRequires:	python3-pybind11 >= 2.13.2
 BuildRequires:	python3-pythran >= 0.14.0
+%if %{with tests}
+BuildRequires:	python3-array-api-astrict >= 2.3.1
+BuildRequires:	python3-asv
+BuildRequires:	python3-gmpy2
+BuildRequires:	python3-hypothesis >= 6.30
+BuildRequires:	python3-mpmath
+BuildRequires:	python3-pooch
+BuildRequires:	python3-pytest >= 8.0.0
+BuildRequires:	python3-pytest-cov
+BuildRequires:	python3-pytest-timeout
+BuildRequires:	python3-pytest-xdist
+BuildRequires:	python3-scikit-umfpack
+BuildRequires:	python3-threadpoolctl
+%endif
+# TODO: -Duse-system-libraries=qhull for meson
+#BuildRequires:	qhull-devel >= 8.0.2 (2020)
 BuildRequires:	rpm-build >= 4.6
 BuildRequires:	rpmbuild(macros) >= 2.044
 BuildRequires:	tar >= 1:1.22
+BuildRequires:	xsimd-devel
+BuildRequires:	zlib-devel
 %if %{with doc}
 BuildRequires:	pydoc3
 BuildRequires:	python3-intersphinx_registry
 BuildRequires:	python3-jupyterlite_pyodide_kernel
-BuildRequires:	python3-jupyterlite_sphinx >= 0.16.55
+BuildRequires:	python3-jupyterlite_sphinx >= 0.19.1
 BuildRequires:	python3-jupytext
+BuildRequires:	python3-linkify-it-py
 BuildRequires:	python3-matplotlib >= 3.5
-BuildRequires:	python3-myst_nb
+BuildRequires:	python3-myst_nb >= 1.2.0
 BuildRequires:	python3-numpydoc
 BuildRequires:	python3-pooch
-BuildRequires:	python3-pydata_sphinx_theme >= 0.6.1
+BuildRequires:	python3-pydata_sphinx_theme >= 0.15.2
 BuildRequires:	python3-sphinx_copybutton
-BuildRequires:	python3-sphinx_design
+BuildRequires:	python3-sphinx_design >= 0.4.0
 BuildRequires:	sphinx-pdg-3 >= 5.0.0
 %endif
 Requires:	lapack >= 3.6.0
-Requires:	python3-modules >= 1:3.10
+Requires:	python3-modules >= 1:3.11
 Requires:	python3-numpy >= 1:2.0.0
 Suggests:	python3-pillow
 BuildRoot:	%{tmpdir}/%{name}-%{version}-root-%(id -u -n)
@@ -85,7 +108,9 @@ Dokumentacja API modułu SciPy.
 %setup -q -n scipy-%{version}
 
 %build
-%py3_build_pyproject -Csetup-args="-Dblas=blas" -Csetup-args="-Dlapack=lapack"
+%py3_build_pyproject \
+	-Csetup-args="-Dblas=blas" \
+	-Csetup-args="-Dlapack=lapack"
 
 %if %{with doc}
 %__unzip -qo build-3/*.whl -d build-3/build-path
@@ -102,7 +127,9 @@ rm -rf $RPM_BUILD_ROOT
 
 %{__rm} $RPM_BUILD_ROOT%{py3_sitedir}/%{module}/_lib/_uarray/LICENSE
 %{__rm} $RPM_BUILD_ROOT%{py3_sitedir}/%{module}/fft/_pocketfft/LICENSE.md
-%{__rm} $RPM_BUILD_ROOT%{py3_sitedir}/%{module}/spatial/qhull_src/COPYING.txt
+%{__rm} $RPM_BUILD_ROOT%{py3_sitedir}/%{module}/sparse/linalg/_eigen/arpack/COPYING
+%{__rm} $RPM_BUILD_ROOT%{py3_sitedir}/%{module}/spatial/qhull_src/COPYING_QHULL.txt
+
 %{__rm} $RPM_BUILD_ROOT%{py3_sitedir}/%{module}/_lib/_test_deprecation_*.so
 %{__rm} -r $RPM_BUILD_ROOT%{py3_sitedir}/%{module}/*/tests
 %{__rm} -r $RPM_BUILD_ROOT%{py3_sitedir}/%{module}/*/*/tests
@@ -118,6 +145,7 @@ rm -rf $RPM_BUILD_ROOT
 %dir %{py3_sitedir}/%{module}
 %{py3_sitedir}/%{module}/*.py
 %{py3_sitedir}/%{module}/__pycache__
+%attr(755,root,root) %{py3_sitedir}/%{module}/_cyutility.*.so
 %dir %{py3_sitedir}/%{module}/_lib
 %attr(755,root,root) %{py3_sitedir}/%{module}/_lib/_ccallback_c.*.so
 %attr(755,root,root) %{py3_sitedir}/%{module}/_lib/_fpumode.*.so
@@ -153,6 +181,13 @@ rm -rf $RPM_BUILD_ROOT
 %dir %{py3_sitedir}/%{module}/_lib/array_api_extra
 %{py3_sitedir}/%{module}/_lib/array_api_extra/*.py
 %{py3_sitedir}/%{module}/_lib/array_api_extra/__pycache__
+%dir %{py3_sitedir}/%{module}/_lib/array_api_extra/_lib
+%{py3_sitedir}/%{module}/_lib/array_api_extra/_lib/*.py
+%{py3_sitedir}/%{module}/_lib/array_api_extra/_lib/__pycache__
+%dir %{py3_sitedir}/%{module}/_lib/array_api_extra/_lib/_utils
+%{py3_sitedir}/%{module}/_lib/array_api_extra/_lib/_utils/*.py
+%{py3_sitedir}/%{module}/_lib/array_api_extra/_lib/_utils/*.pyi
+%{py3_sitedir}/%{module}/_lib/array_api_extra/_lib/_utils/__pycache__
 %dir %{py3_sitedir}/%{module}/_lib/cobyqa
 %{py3_sitedir}/%{module}/_lib/cobyqa/*.py
 %{py3_sitedir}/%{module}/_lib/cobyqa/__pycache__
@@ -162,6 +197,15 @@ rm -rf $RPM_BUILD_ROOT
 %dir %{py3_sitedir}/%{module}/_lib/cobyqa/utils
 %{py3_sitedir}/%{module}/_lib/cobyqa/utils/*.py
 %{py3_sitedir}/%{module}/_lib/cobyqa/utils/__pycache__
+%dir %{py3_sitedir}/%{module}/_lib/pyprima
+%{py3_sitedir}/%{module}/_lib/pyprima/*.py
+%{py3_sitedir}/%{module}/_lib/pyprima/__pycache__
+%dir %{py3_sitedir}/%{module}/_lib/pyprima/cobyla
+%{py3_sitedir}/%{module}/_lib/pyprima/cobyla/*.py
+%{py3_sitedir}/%{module}/_lib/pyprima/cobyla/__pycache__
+%dir %{py3_sitedir}/%{module}/_lib/pyprima/common
+%{py3_sitedir}/%{module}/_lib/pyprima/common/*.py
+%{py3_sitedir}/%{module}/_lib/pyprima/common/__pycache__
 %dir %{py3_sitedir}/%{module}/cluster
 %attr(755,root,root) %{py3_sitedir}/%{module}/cluster/*.so
 %{py3_sitedir}/%{module}/cluster/*.py
@@ -221,8 +265,11 @@ rm -rf $RPM_BUILD_ROOT
 %dir %{py3_sitedir}/%{module}/linalg
 %{py3_sitedir}/%{module}/linalg/*.pxd
 %attr(755,root,root) %{py3_sitedir}/%{module}/linalg/*.so
+%{py3_sitedir}/%{module}/linalg/_blas_subroutines.h
+%{py3_sitedir}/%{module}/linalg/_lapack_subroutines.h
 %{py3_sitedir}/%{module}/linalg/*.py
 %{py3_sitedir}/%{module}/linalg/*.pyi
+%{py3_sitedir}/%{module}/linalg/*.pyx
 %{py3_sitedir}/%{module}/linalg/__pycache__
 %dir %{py3_sitedir}/%{module}/misc
 %{py3_sitedir}/%{module}/misc/*.py
@@ -237,6 +284,7 @@ rm -rf $RPM_BUILD_ROOT
 %{py3_sitedir}/%{module}/odr/__pycache__
 %dir %{py3_sitedir}/%{module}/optimize
 %attr(755,root,root) %{py3_sitedir}/%{module}/optimize/*.so
+%{py3_sitedir}/%{module}/optimize/*.pxd
 %{py3_sitedir}/%{module}/optimize/*.py
 %{py3_sitedir}/%{module}/optimize/__pycache__
 %dir %{py3_sitedir}/%{module}/optimize/_highspy
@@ -257,7 +305,6 @@ rm -rf $RPM_BUILD_ROOT
 %dir %{py3_sitedir}/%{module}/optimize/_trustregion_constr
 %{py3_sitedir}/%{module}/optimize/_trustregion_constr/*.py
 %{py3_sitedir}/%{module}/optimize/_trustregion_constr/__pycache__
-%{py3_sitedir}/%{module}/optimize/cython_optimize.pxd
 %dir %{py3_sitedir}/%{module}/optimize/cython_optimize
 %attr(755,root,root) %{py3_sitedir}/%{module}/optimize/cython_optimize/*.so
 %{py3_sitedir}/%{module}/optimize/cython_optimize/*.py
@@ -312,6 +359,8 @@ rm -rf $RPM_BUILD_ROOT
 %{py3_sitedir}/%{module}/spatial/transform/__pycache__
 %dir %{py3_sitedir}/%{module}/special
 %attr(755,root,root) %{py3_sitedir}/%{module}/special/*.so
+%{py3_sitedir}/%{module}/special/_ufuncs_*.h
+%{py3_sitedir}/%{module}/special/_ufuncs*.pyx
 %{py3_sitedir}/%{module}/special/*.pxd
 %{py3_sitedir}/%{module}/special/*.py
 %{py3_sitedir}/%{module}/special/*.pyi
